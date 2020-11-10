@@ -87,7 +87,7 @@ app.delete('/api/persons/:id', (req, res, next) => {
     res.status(204).end()*/
 })
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const maxId = persons.length > 0
     ? Math.max(...persons.map(n => n.id)) 
     : 0
@@ -96,22 +96,22 @@ app.post('/api/persons', (req, res) => {
     person.id = maxId +1
    //tarkistetaan että nimi ja numero on syötetty
     if(person.name && person.number) {
+       
+        const person = new Person({
+            name: req.body.name,
+            number: req.body.number
+        })
+
         //tarkistetaan onko nimi jo listalla
-        if(persons.find(j => person.name === j.name)){
-            res.status(404).end(`Error: Name must be unique`)
-        } else {
-            const person = new Person({
-                name: req.body.name,
-                number: req.body.number
+        person.save()
+            .then(savedPerson => {
+                res.json(savedPerson.toJSON())
             })
-
-            person.save().then(savedPerson => {
-                res.json(savedPerson)
-            })
-
-        //persons = persons.concat(person)
-        //res.json(person)
-        }
+        .catch(error => {
+            next(error)
+        })
+       
+       
     } else {
         res.status(404).end(`Error: Name or number is missing`)
     }    
@@ -123,10 +123,11 @@ const errorHandler = (error, req, res, next) => {
     console.error(error.message)
     if(error.name === 'CastError') {
         return res.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return res.status(400).json({ error: error.message })
     }
     next(error)
 }
-
 app.use(errorHandler)
 
 const PORT = process.env.PORT
