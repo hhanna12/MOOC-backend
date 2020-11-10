@@ -4,6 +4,7 @@ const morgan = require('morgan')
 const app = express()
 const cors = require('cors')
 const Person = require('./models/person')
+const process = ''
 
 app.use(cors())
 app.use(express.json())
@@ -14,23 +15,23 @@ app.use(morgan('tiny'))
 let persons = [
     {    
         id: 1,
-        name: "Arto Hellas",
-        number: "040-123456"
+        name: 'Arto Hellas',
+        number: '040-123456'
     },
     {
         id: 2,
-        name: "Ada Lovelace",
-        number: "39-44-5323523"
+        name: 'Ada Lovelace',
+        number: '39-44-5323523'
     },    
     {    
         id: 3,
-        name: "Dan Abramow",
-        number: "12-43-234345"
+        name: 'Dan Abramow',
+        number: '12-43-234345'
     },
     {
         id: 4,
-        name: "Mary Poppendick",
-        number: "39-23-6423122"
+        name: 'Mary Poppendick',
+        number: '39-23-6423122'
     }
 ]
 
@@ -75,10 +76,8 @@ app.get('/api/persons/:id', (req, res, next) => {
 
 app.delete('/api/persons/:id', (req, res, next) => {
     console.log('poistossa id: ', req.params.id)
-   Person.findByIdAndRemove(req.params.id)
-        .then(result => {
-            res.status(204).end()
-        })
+    Person.findByIdAndRemove(req.params.id)
+        .then(res.status(204).end())
         .catch(error => next(error))
     
     //poisto backendkoodista
@@ -89,31 +88,28 @@ app.delete('/api/persons/:id', (req, res, next) => {
 
 app.post('/api/persons', (req, res, next) => {
     const maxId = persons.length > 0
-    ? Math.max(...persons.map(n => n.id)) 
-    : 0
+        ? Math.max(...persons.map(n => n.id)) 
+        : 0
 
     const person = req.body
     person.id = maxId +1
-   //tarkistetaan että nimi ja numero on syötetty
+    //tarkistetaan että nimi ja numero on syötetty
     if(person.name && person.number) {
-       
         const person = new Person({
             name: req.body.name,
             number: req.body.number
         })
-
         //tarkistetaan onko nimi jo listalla
         person.save()
             .then(savedPerson => {
                 res.json(savedPerson.toJSON())
             })
-        .catch(error => {
-            next(error)
-        })
-       
-       
+            .catch(error => {
+                next(error)
+            })
+
     } else {
-        res.status(404).end(`Error: Name or number is missing`)
+        res.status(404).end('Error: Name or number is missing')
     }    
 })
 
